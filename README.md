@@ -1,6 +1,6 @@
 #koa-flash
 
-Flash messages for your koa application.
+Flash messages for your [koa](https://github.com/koajs/koa) application.
 
 ## Installation
 
