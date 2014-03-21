@@ -2,6 +2,8 @@
 
 Flash messages for your [koa](https://github.com/koajs/koa) application.
 
+[![Build Status](https://travis-ci.org/rickharrison/koa-flash.svg?branch=master)](https://travis-ci.org/rickharrison/koa-flash)
+
 ## Installation
 
 ```js
