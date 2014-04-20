@@ -13,7 +13,7 @@ module.exports = function (opts) {
   var key = opts.key || 'koa-flash';
 
   return function *flash(next) {
-    if (this.session === undefined) throw Error('koa-flash requires the koa-session middleware.');
+    if (this.session === undefined) throw new Error('koa-flash requires the koa-session middleware.');
 
     var data = this.session[key] || {};
 
