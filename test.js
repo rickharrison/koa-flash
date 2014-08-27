@@ -14,16 +14,16 @@ function App(opts) {
 }
 
 describe('koa flash', function () {
-  it('should add a flash property', function (done) {
+  it('should add a flash function', function (done) {
     var app = App();
 
     app.use(function *() {
-      this.body = this.flash;
+      this.body = typeof this.flash;
     });
 
     request(app.listen())
     .get('/')
-    .expect({})
+    .expect("function")
     .expect(200, done);
   });
 
@@ -40,29 +40,14 @@ describe('koa flash', function () {
     var app = App();
 
     app.use(function *() {
-      this.flash = 'foo';
+      this.flash('error', 'foo');
 
-      this.body = this.session['koa-flash'];
+      this.body = this.session.flash['error'];
     });
 
     request(app.listen())
     .get('/')
-    .expect('foo')
-    .expect(200, done);
-  });
-
-  it('should set flash into opts.key', function (done) {
-    var app = App({ key: 'foo' });
-
-    app.use(function *() {
-      this.flash = 'bar';
-
-      this.body = this.session.foo;
-    });
-
-    request(app.listen())
-    .get('/')
-    .expect('bar')
+    .expect(['foo'])
     .expect(200, done);
   });
 
@@ -73,10 +58,10 @@ describe('koa flash', function () {
       var app = App();
 
       app.use(function *() {
-        this.body = this.flash;
+        this.body = this.flash();
 
         if (this.method === 'POST') {
-          this.flash = { foo: 'bar' };
+          this.flash('foo', 'bar');
         }
       });
 
@@ -94,13 +79,13 @@ describe('koa flash', function () {
 
     it('should remember flash messages for one request', function (done) {
       agent.get('/')
-      .expect({ foo: 'bar' })
+      .expect({ foo: ['bar'] })
       .expect(200, done);
     });
 
     it('should delete flash messages after one request', function (done) {
       agent.get('/')
-      .expect({ foo: 'bar' })
+      .expect({ foo: ['bar'] })
       .expect(200)
       .end(function(err) {
         setImmediate(function() {
