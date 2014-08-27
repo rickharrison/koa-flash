@@ -17,6 +17,7 @@ module.exports = function flash(options) {
   
   return function * (next) {
     if (this.flash && safe) { return yield *next; }
+    if (this.session === undefined) throw Error('req.flash() requires sessions');
     this.flash = _flash;
     yield *next;
   }
@@ -57,7 +58,6 @@ module.exports = function flash(options) {
  * @api public
  */
 function _flash(type, msg) {
-  if (this.session === undefined) throw Error('req.flash() requires sessions');
   var msgs = this.session.flash = this.session.flash || {};
   if (type && msg) {
     // util.format is available in Node.js 0.6+
