@@ -2,7 +2,7 @@
  * Initialize flash middleware with `opts`
  *
  * - `key` session property name (default: koa-flash)
- * - `init` initial value for this.flash (default: {})
+ * - `defaultValue` default value for this.flash (default: {})
  *
  * @param {Object} opts
  * @return {GeneratorFunction}
