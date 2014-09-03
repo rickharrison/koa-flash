@@ -66,6 +66,19 @@ describe('koa flash', function () {
     .expect(200, done);
   });
 
+  it('defaultValue for flash', function (done) {
+    var app = App({ defaultValue: 'bar' });
+
+    app.use(function *() {
+      this.body = this.flash;
+    });
+
+    request(app.listen())
+    .get('/')
+    .expect('bar')
+    .expect(200, done);
+  });
+
   describe('when flash is set', function () {
     var agent;
 

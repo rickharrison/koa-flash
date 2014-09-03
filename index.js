@@ -12,12 +12,12 @@
 module.exports = function (opts) {
   var opts = opts || {};
   var key = opts.key || 'koa-flash';
-  var init = opts.init || {};
+  var defaultValue = opts.defaultValue || {};
 
   return function *flash(next) {
     if (this.session === undefined) throw new Error('koa-flash requires the koa-session middleware.');
 
-    var data = this.session[key] || init;
+    var data = this.session[key] || defaultValue;
 
     delete this.session[key];
 

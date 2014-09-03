@@ -48,6 +48,12 @@ Flash data is saved into `this.session['koa-flash']` by default. You can change 
 app.use(flash({ key: 'foo' }));
 ```
 
+Also, you can set `defaultValue` instead of `{}`.
+
+```js
+app.use(flash({ defaultValue: 'bar' }));
+```
+
 ## License
 
 MIT
