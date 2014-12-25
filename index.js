@@ -2,6 +2,7 @@
  * Initialize flash middleware with `opts`
  *
  * - `key` session property name (default: koa-flash)
+ * - `defaultValue` default value for this.flash (default: {})
  *
  * @param {Object} opts
  * @return {GeneratorFunction}
@@ -11,11 +12,12 @@
 module.exports = function (opts) {
   var opts = opts || {};
   var key = opts.key || 'koa-flash';
+  var defaultValue = opts.defaultValue || {};
 
   return function *flash(next) {
     if (this.session === undefined) throw new Error('koa-flash requires the koa-session middleware.');
 
-    var data = this.session[key] || {};
+    var data = this.session[key] || defaultValue;
 
     delete this.session[key];
 
