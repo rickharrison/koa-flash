@@ -32,5 +32,9 @@ module.exports = function (opts) {
     });
 
     yield *next;
+
+    if (this.status == 302 && this.session && !(this.session[key])) {
+      this.session[key] = data;
+    }
   };
 };
