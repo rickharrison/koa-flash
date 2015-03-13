@@ -79,6 +79,19 @@ describe('koa flash', function () {
     .expect(200, done);
   });
 
+  it('returns stored value in the same request it was set', function (done) {
+    var app = App();
+
+    app.use(function *() {
+      this.flash = 'foo';
+      this.body = this.flash;
+    });
+    request(app.listen())
+    .get('/')
+    .expect('foo')
+    .expect(200, done);
+  });
+
   describe('when flash is set', function () {
     var agent;
 
