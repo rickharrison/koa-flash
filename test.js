@@ -86,6 +86,10 @@ describe('koa flash', function () {
       var app = App();
 
       app.use(function *() {
+        if (this.path == '/redirect') {
+          return this.redirect('back');
+        }
+
         this.body = this.flash;
 
         if (this.method === 'POST') {
@@ -105,13 +109,13 @@ describe('koa flash', function () {
       });
     });
 
-    it('should remember flash messages for one request', function (done) {
+    function expectFlash(done) {
       agent.get('/')
       .expect({ foo: 'bar' })
       .expect(200, done);
-    });
+    }
 
-    it('should delete flash messages after one request', function (done) {
+    function expectFlashDeleted(done) {
       agent.get('/')
       .expect({ foo: 'bar' })
       .expect(200)
@@ -122,6 +126,26 @@ describe('koa flash', function () {
           .expect(200, done);
         });
       });
-    });
+    }
+
+    it('should remember flash messages for one request', expectFlash);
+
+    it('should delete flash messages after one request', expectFlashDeleted);
+
+    describe('and app redirects a request', function () {
+
+      beforeEach(function (done) {
+        agent.get('/redirect').expect(302, function(err) {
+          setImmediate(function() {
+            agent.get('/redirect').expect(302, done)
+          })
+        })
+      })
+
+      it('should remember flash messages across redirects', expectFlash);
+
+      it('should delete flash messages after redirect is resolved', expectFlashDeleted);
+
+    })
   });
 });
