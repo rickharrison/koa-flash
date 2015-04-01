@@ -1,6 +1,6 @@
 {
   "name": "koa-flash",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Flash messages for your koa application.",
   "main": "index.js",
   "repository": {
