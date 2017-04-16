@@ -16,15 +16,13 @@ module.exports = function (opts) {
 
   return function *flash(next) {
     if (this.session === undefined) throw new Error('koa-flash requires the koa-session middleware.');
-
-    var data = this.session[key] || defaultValue;
-
+    var prevData = this.session[key];
     delete this.session[key];
-
+        
     Object.defineProperty(this, 'flash', {
       enumerable: true,
       get: function() {
-        return data;
+        return prevData || this.session[key] || defaultValue;
       },
       set: function(val) {
         this.session[key] = val;
