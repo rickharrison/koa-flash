@@ -1,40 +1,38 @@
 /**
- * Initialize flash middleware with `opts`
+ * Initialize flash middleware with `options`
  *
  * - `key` session property name (default: koa-flash)
  * - `defaultValue` default value for this.flash (default: {})
  *
- * @param {Object} opts
- * @return {GeneratorFunction}
+ * @param {Object} options
+ * @return {async function}
  * @api public
  */
 
-module.exports = function (opts) {
-  var opts = opts || {};
-  var key = opts.key || 'koa-flash';
-  var defaultValue = opts.defaultValue || {};
+function koaFlashMiddleware(options = {}) {
+  const opt = { key: 'koa-flash', defaultValue: {}, ...options };
 
-  return function *flash(next) {
-    if (this.session === undefined) throw new Error('koa-flash requires the koa-session middleware.');
+  return async function koaFlash(ctx, next) {
+    if (ctx.session == undefined) ctx.throw(403, 'Session middleware required (e.g. koa-session)');
 
-    var data = this.session[key] || defaultValue;
+    // flash data from previous request?
+    const data = ctx.session[opt.key] || opt.defaultValue;
+    delete ctx.session[opt.key]; // don't leave it hanging around
 
-    delete this.session[key];
-
-    Object.defineProperty(this, 'flash', {
+    // set up 'flash' setter/getter on ctx object
+    Object.defineProperty(ctx, 'flash', {
       enumerable: true,
-      get: function() {
-        return data;
-      },
-      set: function(val) {
-        this.session[key] = val;
-      }
+      set: function(val) { ctx.session[opt.key] = val; },
+      get: function()    { return data; },
     });
 
-    yield *next;
+    await next();
 
-    if (this.status == 302 && this.session && !(this.session[key])) {
-      this.session[key] = data;
+    // enable flash messages to propagate across redirects
+    if (ctx.status == 302 && !ctx.session[opt.key]) {
+      ctx.session[opt.key] = data;
     }
   };
-};
+}
+
+module.exports = koaFlashMiddleware;

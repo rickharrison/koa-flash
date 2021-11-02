@@ -1,13 +1,15 @@
-var koa = require('koa')
-  , session = require('koa-session')
-  , flash = require('./')
-  , request = require('supertest');
+const Koa = require('koa');
+const session = require('koa-session');
+const request = require('supertest');
+
+const flash = require('./index.js');
+
 
 function App(opts) {
-  var app = koa();
+  const app = new Koa();
 
   app.keys = ['foo'];
-  app.use(session());
+  app.use(session(app));
   app.use(flash(opts));
 
   return app;
@@ -15,10 +17,11 @@ function App(opts) {
 
 describe('koa flash', function () {
   it('should add a flash property', function (done) {
-    var app = App();
+    const app = App();
 
-    app.use(function *() {
-      this.body = this.flash;
+    app.use(function (ctx, next) {
+      ctx.body = ctx.flash;
+      next();
     });
 
     request(app.listen())
@@ -28,21 +31,20 @@ describe('koa flash', function () {
   });
 
   it('should require koa-session', function (done) {
-    var app = koa();
+    const app = new Koa();
     app.use(flash());
 
     request(app.listen())
     .get('/')
-    .expect(500, done);
+    .expect(403, done);
   });
 
   it('should set flash into session', function (done) {
-    var app = App();
+    const app = App();
 
-    app.use(function *() {
-      this.flash = 'foo';
-
-      this.body = this.session['koa-flash'];
+    app.use(function (ctx, next) {
+      ctx.flash = 'foo';
+      ctx.body = ctx.session['koa-flash'];
     });
 
     request(app.listen())
@@ -52,12 +54,11 @@ describe('koa flash', function () {
   });
 
   it('should set flash into opts.key', function (done) {
-    var app = App({ key: 'foo' });
+    const app = App({ key: 'foo' });
 
-    app.use(function *() {
-      this.flash = 'bar';
-
-      this.body = this.session.foo;
+    app.use(function (ctx, next) {
+      ctx.flash = 'bar';
+      ctx.body = ctx.session.foo;
     });
 
     request(app.listen())
@@ -67,10 +68,10 @@ describe('koa flash', function () {
   });
 
   it('defaultValue for flash', function (done) {
-    var app = App({ defaultValue: 'bar' });
+    const app = App({ defaultValue: 'bar' });
 
-    app.use(function *() {
-      this.body = this.flash;
+    app.use(function (ctx, next) {
+      ctx.body = ctx.flash;
     });
 
     request(app.listen())
@@ -80,20 +81,20 @@ describe('koa flash', function () {
   });
 
   describe('when flash is set', function () {
-    var agent;
+    let agent = null;
 
     beforeEach(function (done) {
-      var app = App();
+      const app = App();
 
-      app.use(function *() {
-        if (this.path == '/redirect') {
-          return this.redirect('back');
+      app.use(function (ctx, next) {
+        if (ctx.path == '/redirect') {
+          return ctx.redirect('back');
         }
 
-        this.body = this.flash;
+        ctx.body = ctx.flash;
 
-        if (this.method === 'POST') {
-          this.flash = { foo: 'bar' };
+        if (ctx.method === 'POST') {
+          ctx.flash = { foo: 'bar' };
         }
       });
 
@@ -137,15 +138,15 @@ describe('koa flash', function () {
       beforeEach(function (done) {
         agent.get('/redirect').expect(302, function(err) {
           setImmediate(function() {
-            agent.get('/redirect').expect(302, done)
-          })
-        })
-      })
+            agent.get('/redirect').expect(302, done);
+          });
+        });
+      });
 
       it('should remember flash messages across redirects', expectFlash);
 
       it('should delete flash messages after redirect is resolved', expectFlashDeleted);
 
-    })
+    });
   });
 });
